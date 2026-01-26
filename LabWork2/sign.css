@@ -1,0 +1,240 @@
+body {
+    margin: 0;
+    background: url(star2.jpg);
+    background-repeat: no-repeat; 
+    background-attachment: fixed;
+    background-size: cover;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+    
+}
+
+.tab { 
+    margin: 150px auto;
+    width: 300px; 
+    padding: 20px;    
+    display: flex;
+    flex-direction: column;
+    justify-content: center;    
+    align-items: center;
+    background: rgba(255, 255, 255, 0.10);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+h2 {color: #fff;}
+
+.logbut {
+    margin-top: 20px;
+    padding: 5px 20px 5px 20px;
+    border: 2px solid #ffffff;
+    border-radius: 10px;
+    background-color:  rgb(174, 33, 249);
+    border: none;
+    color: #fff;
+    font-size: 20px;
+    transition: 0.15s ease-in-out; 
+}
+
+.logbut:hover {
+    scale: 1.1;
+    background-color:  rgb(139, 28, 214);
+}
+
+.signform {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;    
+    align-items: center;
+}
+
+input { 
+    width: 250px; 
+    margin: 6px 0; 
+    padding: 8px; 
+    border-radius: 20px;
+    border: none;
+}
+
+.link { color: rgb(255, 255, 255); 
+    cursor: pointer; 
+    text-decoration: underline; 
+    font-size: 14px; 
+}
+
+.hidden { 
+    display: none; 
+}
+
+input.error { 
+    border: 2px solid red; 
+    box-shadow: 0 0 5px red; 
+    animation: glowRed 0.6s ease-out; 
+}
+
+    @keyframes glowRed {
+      0% { box-shadow: 0 0 5px red; }
+      50% { box-shadow: 0 0 10px red; }
+      100% { box-shadow: 0 0 5px red; }
+    }
+
+/* Overlay modal styles */
+.overlay { 
+    position: fixed; 
+    top:0; left:0; 
+    width:100%; 
+    height:100%; 
+    background: rgba(0,0,0,0.5); 
+    display:none; 
+    justify-content:center; 
+    align-items:center; 
+    z-index:1000; 
+}
+
+.hometext {
+    margin: 300px auto;
+    text-align: center;
+    font-size: 80px;
+    color: #fff;
+}
+
+#homeScreen {
+  position: relative; /* needed for absolute positioning inside */
+  padding: 20px;
+}
+
+.home-nav {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+
+.home-nav button {
+  margin-top: 10px;  
+  margin-left: 10px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.home-nav button {
+    border-radius: 10px;
+    border: none;
+    font-size: 18px;
+    padding: 10px;    
+}
+
+.sp {
+    color: #ae5cf1;
+}
+
+.overlay.show { display:flex; }
+.modal { background:#fff; padding:15px; width:90%; max-width:500px; border-radius:6px; position:relative; }
+.modal table { width:100%; border-collapse: collapse; margin-top:10px; }
+.modal th, .modal td { border:1px solid #ccc; padding:6px; text-align:center; font-size:12px; }
+.close { position:absolute; top:8px; right:12px; cursor:pointer; font-weight:bold; font-size:18px; }
+
+.rec {
+    display: block;
+    margin: 20px auto;
+    text-align: center;
+    border-radius: 10px;
+    padding: 5px 20px 5px 20px;
+    background-color:  rgb(174, 33, 249);
+    font-size: 19px;
+    border: none;
+    color: #fff;
+
+}
+
+/* ---------------- ADMIN DASHBOARD ---------------- */
+#adminScreen {
+    padding: 40px 20px;
+    max-width: 1200px;
+    margin: 50px auto;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+#adminScreen h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ae5cf1;
+}
+
+#adminScreen h3 {
+    margin-top: 30px;
+    color: #fff;
+}
+
+#adminScreen table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    display: block;
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+#adminScreen table th, #adminScreen table td {
+    padding: 10px;    
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+    text-align: left;
+    font-size: 14px;
+    color: #fff;
+}
+
+#adminScreen table th {
+    width: 100vw;
+    background-color: rgba(174, 33, 249);
+    position: sticky;
+    top: 0;
+}
+
+#adminScreen table tbody tr:nth-child(even) {
+    background-color: rgba(0,0,0,0.2);
+}
+
+#adminScreen button {
+    display: block;
+    margin: 20px auto;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    background-color: rgb(174, 33, 249);
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+#adminRecordTable {
+    width: 100vw;
+}
+#adminScreen button:hover {
+    background-color: rgb(139, 28, 214);
+}
+
+/* Search input */
+#adminScreen input[type="text"] {
+    width: 300px;
+    margin: 10px 0;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: none;
+}
+
+.admint {
+    width: 100%;
+}
+

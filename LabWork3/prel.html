@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+    <html>
+        <head>
+            <title>Grade Calculator</title>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            
+
+            <link rel="stylesheet" href="prel.css">
+
+        </head>
+        <body>            
+           
+            <div class="calc">
+                <div class="maingrid mainbox">   
+                    <div class="order">
+                        <div class="te">
+                            <div>Calculate Your Required <span class="fe">Prelim Exam</span> Grade</div>
+                        </div>
+                
+                        <div class="inspace">
+                            <form  action="calculate" method="post" >
+                            <div class="gradesbg">                        
+                                <div class="form_group">
+                                    <label class="text" for="prel_exam">Lab Work 1:</label>
+                                    <input class="box" type="number" name="lab1" min="0" max="100" value="{{ request.form.prel_exam }}" required>
+                                </div >
+                                <div class="form_group">
+                                    <label class="text" for="quiz">Lab Work 2:</label>
+                                    <input class="box" type="number" name="lab2" min="0" max="100" value="{{ request.form.quiz}}" required>
+                                </div>
+                                <div class="form_group">
+                                    <label class="text" for="requirments">Lab Work 3:</label>
+                                    <input class="box" type="number" name="lab3" min="0" max="100" value="{{ request.form.requirments }}" required>
+                                </div>   
+                                <div class="form_group">
+                                    <label style="width: 500px;"class="text" for="absence">Number of Absence:</label>
+                                    <input class="box" type="number" name="absence" min="0" max="4" required>
+                                </div>                     
+                            </div>   
+                            <div>                         
+                                <div>                            
+                                    <input type="checkbox" id="showResult" hidden>                                                             
+                                    <button type="submit" class="button" for="showResult" onclick="scrollDown()">SUBMIT </button> 
+                                                    
+                                </div>
+                            </div>
+                        </form> 
+                        </div>   
+                    </div>
+                </div>
+            </div>
+        
+            <div  class="result-page">
+                <div class="res" id="normalResult">
+                    <div class="grado">                        
+                        <div id="minimum" class="grade"></div>
+                        <div id="mintext" class="mina"></div>
+                        
+                    </div>                    
+
+                    <div class="analysis">
+                        <div class="bar"></div>
+                        <div class="text-analysis">
+                            <div id="standingText" class="mina"></div>
+                            <div id="analysisFeedback" class="mina3"></div>                           
+                            <div id="result" class="expl"></div>
+                            <div class="displ">
+                                <div id="lab1Result" class="mina5"></div>
+                                <div id="lab2Result" class="mina5"></div>
+                                <div id="lab3Result" class="mina5"></div>
+
+                                <div id="labAvgResult" class="mina4"></div>
+                                <div id="attendanceResult" class="mina4"></div>
+                                <div id="classStandingResult" class="mina4"></div>   
+                            </div>
+                            
+                            <button type="button" class="button reset" onclick="resetAll()">RESET</button>
+                                                       
+                        </div>
+                    </div>
+                </div>
+
+                <div class="resf" id="absenceFail">
+                    <div class="text-analysis" style="margin-top: 100px;">
+                        <div id="absenceText" class="mina2">CLASS FAILED<br>Too many absences.</div>
+                        <button type="button" class="button reset" onclick="resetAll()">RESET</button>
+                    </div>
+                </div>
+                
+            </div>
+                        
+           
+            <script>                
+
+                window.addEventListener("load", () => {
+                    // Restore form values
+                    ["lab1", "lab2", "lab3", "absence"].forEach(name => {
+                        document.querySelector(`[name='${name}']`).value = localStorage.getItem(name) || "";
+                    });
+
+                    const absenceFail = localStorage.getItem("absenceFail") === "true";
+
+                    if (absenceFail) {
+                        document.getElementById("normalResult").style.display = "none";
+                        document.getElementById("absenceFail").style.display = "flex";
+                    } else {
+                        document.getElementById("normalResult").style.display = "flex";
+                        document.getElementById("absenceFail").style.display = "none";
+
+                        // Restore saved results
+                        ["lab1Result","lab2Result","lab3Result","labAvgResult","attendanceResult","classStandingResult",
+                        "analysisFeedback","result","minimum","mintext","standingText","barWidth","barClass"].forEach(id => {
+                            const val = localStorage.getItem(id);
+                            if(val) document.getElementById(id).innerHTML = val;
+                        });
+
+                        // Restore bar
+                        const bar = document.querySelector(".bar");
+                        const barWidth = localStorage.getItem("barWidth");
+                        const barClass = localStorage.getItem("barClass");
+                        if(barWidth) bar.style.width = barWidth + "%";
+                        if(barClass) bar.className = barClass;
+                    }
+                });
+
+                document.querySelector("form").addEventListener("submit", function(e) {
+                    e.preventDefault();
+
+                    const bar = document.querySelector(".bar");
+                    let lab1 = Number(document.querySelector("[name='lab1']").value);
+                    let lab2 = Number(document.querySelector("[name='lab2']").value);
+                    let lab3 = Number(document.querySelector("[name='lab3']").value);
+                    let att = Number(document.querySelector("[name='absence']").value);
+
+                    // Save inputs
+                    ["lab1", "lab2", "lab3", "absence"].forEach((name, i) => {
+                        localStorage.setItem(name, [lab1, lab2, lab3, att][i]);
+                    });
+
+                    let result = "", minimum = "", mintext = "", standingText = "";
+                    let standingPercent = 0;
+
+                    // Hard fail on absences
+                    if (att >= 4) {
+                        localStorage.setItem("absenceFail", "true");
+                        document.getElementById("normalResult").style.display = "none";
+                        document.getElementById("absenceFail").style.display = "block";
+                        bar.style.width = "0%";
+                        bar.className = "bar";
+
+                        localStorage.setItem("barWidth", 0);
+                        localStorage.setItem("barClass", "bar low");
+                        localStorage.setItem("standingText", "Class Failed");
+                        return;
+                    } else {
+                        localStorage.setItem("absenceFail", "false");
+                        document.getElementById("normalResult").style.display = "flex";
+                        document.getElementById("absenceFail").style.display = "none";
+
+                        let atttotal = 100 - (att * 10);
+                        let LabAvg = (lab1 + lab2 + lab3) / 3;
+                        let ClassStanding = (atttotal * 0.4) + (LabAvg * 0.6);
+
+                        standingPercent = Math.max(0, Math.min(ClassStanding, 100));
+                        bar.style.width = standingPercent + "%";
+                        bar.className = "bar";
+
+                        if (ClassStanding < 60) {
+                            standingText = "Low Class Standing";
+                            bar.classList.add("low");
+                        } else if (ClassStanding < 80) {
+                            standingText = "Mediocre Class Standing";
+                            bar.classList.add("mid");
+                        } else {
+                            standingText = "High Class Standing";
+                            bar.classList.add("high");
+                        }
+
+                        let feedback = "";
+                        if (ClassStanding < 60) {
+                            feedback = "Your current class standing is too low to achieve 100 even if you score 100 on the Prelim Exam, your current Lab Work scores and attendance record limit the highest grade you can achieve. Focus on improving your lab scores and maintaining good attendance to maximize your overall grade.";
+                        } else if (ClassStanding < 80) {
+                            feedback = "Your Class Standing is decent but not perfect. Since it counts for 30% of your final grade, there’s a maximum overall grade you can achieve. Scoring 100 on the exam can boost your grade, but your final grade may still fall short of 100 if the Class Standing isn’t high enough.";
+                        } else if (ClassStanding < 95) {
+                            feedback = "Your class standing is High!. You have a strong performance. Scoring well on the Prelim Exam can help you achieve excellent grades.";
+                        } else if (ClassStanding < 99) {
+                            feedback = "Your class standing is Very High!. You were very close to achieving a grade 100. Great effort!";
+                        } 
+
+                        minimum = Math.ceil((75 - (ClassStanding * 0.3)) / 0.7);
+                        mintext = `Minimum exam score to get 75.<br><br>`;
+                        if(Math.ceil((100 - (ClassStanding * 0.3)) / 0.7) <= 100){
+                            result = "Goodjob!! You just need to ace your Exam to get a 100 grade!";
+                        }
+
+                        // Update DOM
+                        const resultsMap = {
+                            lab1Result: `Lab Work 1: ${lab1}`,
+                            lab2Result: `Lab Work 2: ${lab2}`,
+                            lab3Result: `Lab Work 3: ${lab3}`,
+                            labAvgResult: `Lab Average: ${LabAvg.toFixed(2)}`,
+                            attendanceResult: `Attendance Score: ${atttotal}`,
+                            classStandingResult: `Class Standing: ${ClassStanding.toFixed(2)}`,
+                            analysisFeedback: feedback,
+                            result: result,
+                            minimum: minimum,
+                            mintext: mintext,
+                            standingText: standingText
+                        };
+
+                        Object.keys(resultsMap).forEach(id => {
+                            document.getElementById(id).innerHTML = resultsMap[id];
+                            localStorage.setItem(id, resultsMap[id]);
+                        });
+
+                        localStorage.setItem("barWidth", standingPercent);
+                        localStorage.setItem("barClass", bar.className);
+                    }
+
+                    document.querySelector(".result-page").scrollIntoView({ behavior: "smooth" });
+                });
+
+                function resetAll() {
+                    localStorage.clear();
+                    document.querySelector("form").reset();
+
+                    document.getElementById("minimum").innerHTML = "";
+                    document.getElementById("mintext").innerHTML = "";
+                    document.getElementById("result").innerHTML = "";
+                    document.getElementById("standingText").innerHTML = "";
+
+                    const bar = document.querySelector(".bar");
+                    bar.style.width = "0%";
+                    bar.className = "bar";
+
+                    // Show normal result div, hide absence fail div
+                    document.getElementById("normalResult").style.display = "block";
+                    document.getElementById("absenceFail").style.display = "none";
+
+                    // Scroll to top
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+                
+            </script>
+            <script>
+                function scrollDown() {
+                    document.querySelector('.result-page')
+                        .scrollIntoView({ behavior: 'smooth' });
+                }
+            </script>
+        </div>
+        </body>
+    </html>

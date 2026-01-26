@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Login System</title>
+  <link rel="stylesheet" href="sign.css">
+</head>
+<body>
+
+<div class="container">
+
+  <!-- LOGIN FORM -->
+  <div id="loginForm" class="tab">
+    <h2>Log In</h2>
+    <input id="li-user" placeholder="Username">
+    <input id="li-pass" type="password" placeholder="Password">
+    <p style="color: #fff;" id="result"></p>
+    <button onclick="logIn()" class="logbut">Log In</button>
+    <p class="link" onclick="showSignUp()">No account yet?</p>
+    
+  </div>
+
+  <!-- SIGN UP FORM -->
+  <div id="signupForm" class="hidden tab">
+    <div class="signform">
+      <h2>Sign Up</h2>
+      <input id="su-user" placeholder="Username">
+      <input id="su-name" placeholder="Student Name">
+      <input id="su-pass" type="password" placeholder="Password">
+      <p style="color: #fff;" id="result"></p>
+      <button onclick="signUp()" class="logbut">Create Account</button>
+      <p class="link" onclick="showLogin()">Already have an account?</p>
+      <p id="result"></p>
+    </div>    
+  </div>
+
+  <!-- HOME SCREEN FOR REGULAR USERS -->
+  <div id="homeScreen" class="hidden">
+    <div class="home-nav">
+      <button onclick="showRecords()">View Records</button>
+      <button onclick="logout()">Logout</button>
+    </div>
+    <div class="hometext">Welcome Back <span class="sp" id="welcomeText"></span>!</div>
+  </div>
+
+  <!-- ADMIN DASHBOARD -->
+  <div id="adminScreen" class="hidden">
+    <h2>Admin Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+
+    <h3>All Records</h3>
+    <input type="text" id="recordSearch" placeholder="Search records...">
+    <table id="adminRecordTable">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Name</th>
+          <th>UID</th>
+          <th>Time</th>
+          <th>Signature</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <button onclick="downloadAllRecords()">Download All Records CSV</button>
+  </div>
+  
+</div>
+
+<!-- RECORDS MODAL FOR USERS -->
+<div id="recordOverlay" class="overlay">
+  <div class="modal">
+    <span class="close" onclick="closeRecords()">✖</span>
+    <h3>My Records</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>UID</th>
+          <th>Time</th>
+          <th>Signature</th>
+        </tr>
+      </thead>
+      <tbody id="recordTable"></tbody>
+    </table>
+    <button class="rec" onclick="downloadRecords()">Download Records CSV</button>
+  </div>
+</div>
+
+<!-- ERROR SOUND -->
+<audio id="errorSound">
+  <source src="error.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+/* ---------- ELEMENTS ---------- */
+const li_user = document.getElementById("li-user");
+const li_pass = document.getElementById("li-pass");
+const su_user = document.getElementById("su-user");
+const su_name = document.getElementById("su-name");
+const su_pass = document.getElementById("su-pass");
+const loginForm = document.getElementById("loginForm");
+const signupForm = document.getElementById("signupForm");
+const homeScreen = document.getElementById("homeScreen");
+const welcomeText = document.getElementById("welcomeText");
+const result = document.getElementById("result");
+const recordOverlay = document.getElementById("recordOverlay");
+const recordTable = document.getElementById("recordTable");
+const errorSound = document.getElementById("errorSound");
+const adminScreen = document.getElementById("adminScreen");
+const adminRecordTable = document.getElementById("adminRecordTable").querySelector("tbody");
+const recordSearch = document.getElementById("recordSearch");
+
+/* ---------- LOCAL STORAGE HELPERS ---------- */
+function loadUsers() { return JSON.parse(localStorage.getItem("users")) || []; }
+function saveUsers(users) { localStorage.setItem("users", JSON.stringify(users)); }
+function loadRecords() { return JSON.parse(localStorage.getItem("records")) || []; }
+function saveRecords(records) { localStorage.setItem("records", JSON.stringify(records)); }
+
+/* ---------- RANDOM HEX ---------- */
+function randomHex(len){
+  return [...crypto.getRandomValues(new Uint8Array(len))]
+    .map(b => b.toString(16).padStart(2,"0")).join("").slice(0,len);
+}
+
+/* ---------- ENSURE ADMIN EXISTS ---------- */
+function ensureAdmin() {
+  const users = loadUsers();
+  if(!users.some(u=>u.username==="admin")){
+    users.push({ username:"admin", realName:"Madam Herta", password:"admin123", uid:"00000000", createdAt: new Date().toISOString() });
+    saveUsers(users);
+  }
+}
+ensureAdmin();
+
+/* ---------- MESSAGE ---------- */
+function show(msg){ result.innerText = msg; }
+
+/* ---------- FORM TOGGLE ---------- */
+function showSignUp(){ loginForm.classList.add("hidden"); signupForm.classList.remove("hidden"); show(""); }
+function showLogin(){ signupForm.classList.add("hidden"); loginForm.classList.remove("hidden"); show(""); }
+
+/* ---------- SIGN UP ---------- */
+function signUp(){
+  const username = su_user.value.trim();
+  const realName = su_name.value.trim();
+  const password = su_pass.value;
+  if(!username || !realName || !password) return show("Fill all fields");
+
+  const users = loadUsers();
+  if(users.some(u=>u.username===username)) return show("Username already exists");
+
+  const newUser = { username, realName, password, uid: randomHex(8), createdAt: new Date().toISOString() };
+  users.push(newUser);
+  saveUsers(users);
+  show("Account created ✔");
+  showLogin();
+}
+
+/* ---------- LOG IN ---------- */
+function logIn(){
+  const username = li_user.value.trim();
+  const password = li_pass.value;
+  const users = loadUsers();
+  const user = users.find(u=>u.username===username);
+
+  if(!user) return show("User not found");
+  if(password !== user.password){ playError(); return show("Wrong password"); }
+
+  show(""); 
+  localStorage.setItem("currentUser", JSON.stringify(user));
+
+  if(user.username === "admin") {
+    showAdmin();
+  } else {
+    addRecord(user);
+    showHome(user);
+  }
+}
+
+/* ---------- SHOW HOMES ---------- */
+function showHome(user){
+  loginForm.classList.add("hidden");
+  signupForm.classList.add("hidden");
+  adminScreen.classList.add("hidden");
+  homeScreen.classList.remove("hidden");
+  welcomeText.innerText = user.realName;
+}
+
+function showAdmin(){
+  loginForm.classList.add("hidden");
+  signupForm.classList.add("hidden");
+  homeScreen.classList.add("hidden");
+  adminScreen.classList.remove("hidden");
+  loadAdminData();
+}
+
+/* ---------- LOGOUT ---------- */
+function logout(){
+  localStorage.removeItem("currentUser");
+  homeScreen.classList.add("hidden");
+  adminScreen.classList.add("hidden");
+  showLogin();
+}
+
+/* ---------- ERROR EFFECT ---------- */
+function playError(){
+  li_pass.classList.add("error");
+  errorSound.play();
+  setTimeout(()=>{ li_pass.classList.remove("error"); }, 1200);
+}
+
+/* ---------- RECORDS ---------- */
+function addRecord(user){
+  const record = {
+    username: user.username,
+    name: user.realName,
+    uid: user.uid,
+    time: new Date().toLocaleString(),
+    signature: randomHex(12)
+  };
+  const records = loadRecords();
+  records.push(record);
+  saveRecords(records);
+}
+
+function loadUserRecords(){
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const records = loadRecords().filter(r => r.username === user.username);
+  recordTable.innerHTML = "";
+  records.forEach(r=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.name}</td><td>${r.uid}</td><td>${r.time}</td><td>${r.signature}</td>`;
+    recordTable.appendChild(tr);
+  });
+}
+
+function showRecords(){
+  loadUserRecords();
+  recordOverlay.classList.add("show");
+}
+
+function closeRecords(){ recordOverlay.classList.remove("show"); }
+
+/* ---------- DOWNLOAD CSV ---------- */
+function downloadRecords(){
+  const user = JSON.parse(localStorage.getItem("currentUser"));
+  const records = loadRecords().filter(r => r.username === user.username);
+  if(!records.length) return alert("No records to download");
+
+  const headers = ["Username","Name","UID","Time","Signature"];
+  const csvRows = [headers.join(",")];
+
+  records.forEach(r => {
+    const row = [`"${r.username}"`,`"${r.name}"`,`"${r.uid}"`,`"${r.time}"`,`"${r.signature}"`];
+    csvRows.push(row.join(","));
+  });
+
+  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `${user.username}_records.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/* ---------- ADMIN FUNCTIONS ---------- */
+function loadAdminData(){
+  const records = loadRecords();
+  adminRecordTable.innerHTML = "";
+  records.forEach(r => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${r.username}</td><td>${r.name}</td><td>${r.uid}</td><td>${r.time}</td><td>${r.signature}</td>`;
+    adminRecordTable.appendChild(tr);
+  });
+}
+
+/* ---------- ADMIN SEARCH FILTER ---------- */
+recordSearch.addEventListener("input", () => {
+  const filter = recordSearch.value.toLowerCase();
+  const rows = adminRecordTable.querySelectorAll("tr");
+  rows.forEach(row => {
+    row.style.display = row.textContent.toLowerCase().includes(filter) ? "" : "none";
+  });
+});
+
+/* ---------- DOWNLOAD ALL RECORDS ---------- */
+function downloadAllRecords(){
+  const records = loadRecords();
+  if(!records.length) return alert("No records to download");
+
+  const headers = ["Username","Name","UID","Time","Signature"];
+  const csvRows = [headers.join(",")];
+
+  records.forEach(r => {
+    const row = [`"${r.username}"`,`"${r.name}"`,`"${r.uid}"`,`"${r.time}"`,`"${r.signature}"`];
+    csvRows.push(row.join(","));
+  });
+
+  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = `all_records.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+/* ---------- AUTO-LOGIN IF USER IN LOCALSTORAGE ---------- */
+const savedUser = localStorage.getItem("currentUser");
+if(savedUser){
+  const user = JSON.parse(savedUser);
+  if(user.username === "admin") showAdmin();
+  else showHome(user);
+}
+
+</script>
+</body>
+</html>
