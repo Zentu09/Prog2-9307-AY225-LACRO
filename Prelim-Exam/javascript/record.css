@@ -1,0 +1,169 @@
+/* --- Base --- */
+body {
+    margin: 0;
+    background: url('gre.jpg') center/cover no-repeat fixed;
+    font-family: 'Times New Roman', Times, serif;
+    color: #fff;
+}
+
+.container {
+    width: 90%;
+    max-width: 1000px;
+    margin: 40px auto;
+}
+
+/* --- Header --- */
+h1 {
+    text-align: center;
+    font-size: 36px;
+    color: #FFE169;
+    margin-bottom: 30px;
+}
+
+/* --- Search Bar --- */
+.search-bar {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+#searchInput {
+    width: 50%;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 25px;
+    border: 1px solid #31aec7;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    outline: none;
+    transition: 0.3s;
+}
+
+#searchInput:focus {
+    border: 1px solid #68c6d9;
+    background: rgba(255,255,255,0.2);
+}
+
+/* --- Form Card --- */
+.form-card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(5px);
+    border-radius: 25px;
+    padding: 25px 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 6px 25px rgba(0,0,0,0.25);
+}
+
+/* --- Form Rows --- */
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 150px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #fff;
+}
+
+.form-group input {
+    padding: 10px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    outline: none;
+    transition: 0.2s;
+}
+
+.form-group input:focus {
+    border: 1px solid #68c6d9;
+    background: rgba(255,255,255,0.2);
+    color: #ffffff;
+}
+
+/* --- Submit Button --- */
+.submit-btn {
+    display: block;
+    margin: 0 auto;
+    padding: 12px 25px;
+    font-size: 18px;
+    border-radius: 20px;
+    border: 1px solid #6b8e85;
+    background-color: #b7f7e6;
+    color: #10362e;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.submit-btn:hover {
+    background-color: #FFE169;
+}
+
+/* --- Table --- */
+.table-wrapper {
+    overflow-x: auto;
+    background: rgba(255,255,255,0.05);
+    padding: 10px;
+    border-radius: 20px;
+}
+
+#studentTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+    font-size: 16px;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+/* Table Header */
+#studentTable th {
+    background-color: #31aec7;  /* Flat color from your palette */
+    color: #fff;
+    padding: 12px 10px;
+    border-radius: 0px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Table Body */
+#studentTable td {
+    background-color: #b5d3d3; /* Light flat row color */
+    padding: 10px;
+    border-bottom: 1px solid #89b8b8;
+    color: #0e3139;  /* Dark text for readability */
+}
+
+#studentTable tbody tr:nth-child(even) td {
+    background-color: #89b8b8; /* Alternate row color */
+}
+
+/* Hover Effect */
+#studentTable tbody tr:hover td {
+    background-color: #53cab1; /* Hover row color */
+    color: #fff;
+}
+
+/* Delete Button */
+.deleteBtn {
+    padding: 5px 12px;
+    background: #ff6b6b;
+    border-radius: 10px;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.deleteBtn:hover {
+    background: #e63946;
+}
